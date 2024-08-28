@@ -48,4 +48,4 @@ We extend our gratitude to Hugo for inspiring this project with his work on ESP8
 
 ## Contact
 
-If you have any questions or need further assistance, please feel free to contact us at [detective@yin.sh].
+If you have any questions or need further assistance, please feel free to contact us at [0day@yin.sh].
